@@ -1,8 +1,9 @@
-echo "node_modules/" >> .gitignore
-echo ".env" >> .gitignore
-echo "dist/" >> .gitignore
-echo "build/" >> .gitignore
-
+# Node.js
+node_modules/
+dist/
+build/
+npm-debug.log
+yarn-error.log
 
 # Python
 __pycache__/
@@ -25,7 +26,11 @@ reports/
 allure-results/
 allure-report/
 
-# IDE
+# Playwright
+playwright/.auth/
+test-results/
+
+# IDE / Editor
 .vscode/
 .idea/
 *.swp
@@ -36,6 +41,5 @@ allure-report/
 .DS_Store
 Thumbs.db
 
-# Playwright
-playwright/.auth/
-test-results/
+# Logs
+*.log
