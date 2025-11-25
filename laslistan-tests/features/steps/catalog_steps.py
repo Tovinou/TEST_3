@@ -16,6 +16,13 @@ def step_books_show_title_and_author(context):
 @given('det finns böcker i katalogen')
 def step_books_exist_in_catalog(context):
     count = context.catalog_page.get_book_count()
+    if count == 0:
+        # Seed one book via add-book page
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book("Seedbok 1", "Test Författare")
+        context.catalog_page.click_navigation_tab("Katalog")
+        count = context.catalog_page.get_book_count()
     assert count > 0, "Expected books in catalog"
     context.initial_book_count = count
 
@@ -72,6 +79,13 @@ def step_book_not_in_favorites(context):
 @given('det finns en bok med titeln "{title}"')
 def step_book_exists_with_title(context, title):
     is_in_catalog = context.catalog_page.is_book_in_catalog(title)
+    if not is_in_catalog:
+        # Create the book if missing
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book(title, "Okänd Författare")
+        context.catalog_page.click_navigation_tab("Katalog")
+        is_in_catalog = context.catalog_page.is_book_in_catalog(title)
     assert is_in_catalog, f"Book '{title}' not found in catalog"
     context.test_book_title = title
 
@@ -91,6 +105,13 @@ def step_check_favorite_status(context, status):
 @given('det finns minst {count:d} böcker i katalogen')
 def step_at_least_n_books(context, count):
     book_count = context.catalog_page.get_book_count()
+    while book_count < count:
+        idx = book_count + 1
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book(f"Seedbok {idx}", f"Författare {idx}")
+        context.catalog_page.click_navigation_tab("Katalog")
+        book_count = context.catalog_page.get_book_count()
     assert book_count >= count, f"Expected at least {count} books, found {book_count}"
 
 @when('jag favoritmarkerar {count:d} olika böcker')
