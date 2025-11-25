@@ -34,15 +34,25 @@ class AddBookPage(BasePage):
             except Exception:
                 continue
         return None
+
+    def wait_for_add_book_form(self):
+        """Wait until the add-book form inputs are visible"""
+        # Try title then author; tolerate either order
+        title_sel = self._first_visible(self.title_selectors)
+        author_sel = self._first_visible(self.author_selectors)
+        assert title_sel is not None, "Title input not found"
+        assert author_sel is not None, "Author input not found"
     
     def fill_title(self, title: str):
         """Fill in the title field"""
+        self.wait_for_add_book_form()
         sel = self._first_visible(self.title_selectors)
         assert sel, "Title input not found"
         self.page.fill(sel, title)
     
     def fill_author(self, author: str):
         """Fill in the author field"""
+        self.wait_for_add_book_form()
         sel = self._first_visible(self.author_selectors)
         assert sel, "Author input not found"
         self.page.fill(sel, author)
