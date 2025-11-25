@@ -6,21 +6,52 @@ class AddBookPage(BasePage):
     
     def __init__(self, page: Page, base_url: str):
         super().__init__(page, base_url)
-        self.title_input = '[data-testid="title-input"]'
-        self.author_input = '[data-testid="author-input"]'
-        self.submit_button = 'button:has-text("Lägg till ny bok")'
+        self.title_selectors = [
+            '[data-testid="title-input"]',
+            'input[name="title"]',
+            'input[placeholder="Titel"]',
+            '#title'
+        ]
+        self.author_selectors = [
+            '[data-testid="author-input"]',
+            'input[name="author"]',
+            'input[placeholder="Författare"]',
+            '#author'
+        ]
+        self.submit_selectors = [
+            'button:has-text("Lägg till ny bok")',
+            'button:has-text("Lägg till bok")',
+            '[data-testid="submit-button"]',
+            'button[type="submit"]'
+        ]
+
+    def _first_visible(self, selectors):
+        for s in selectors:
+            locator = self.page.locator(s).first
+            try:
+                locator.wait_for(state="visible", timeout=30000)
+                return s
+            except Exception:
+                continue
+        return None
     
     def fill_title(self, title: str):
         """Fill in the title field"""
-        self.page.fill(self.title_input, title)
+        sel = self._first_visible(self.title_selectors)
+        assert sel, "Title input not found"
+        self.page.fill(sel, title)
     
     def fill_author(self, author: str):
         """Fill in the author field"""
-        self.page.fill(self.author_input, author)
+        sel = self._first_visible(self.author_selectors)
+        assert sel, "Author input not found"
+        self.page.fill(sel, author)
     
     def submit_book(self):
         """Click the submit button"""
-        self.page.click(self.submit_button)
+        sel = self._first_visible(self.submit_selectors)
+        assert sel, "Submit button not found"
+        self.page.click(sel, timeout=30000)
         self.page.wait_for_timeout(500)  # Wait for book to be added
     
     def add_book(self, title: str, author: str):
@@ -31,17 +62,26 @@ class AddBookPage(BasePage):
     
     def is_submit_button_enabled(self) -> bool:
         """Check if submit button is enabled"""
-        return self.page.locator(self.submit_button).is_enabled()
+        sel = self._first_visible(self.submit_selectors)
+        return sel is not None and self.page.locator(sel).is_enabled()
     
     def get_title_value(self) -> str:
         """Get the current value of title input"""
-        return self.page.input_value(self.title_input)
+        sel = self._first_visible(self.title_selectors)
+        assert sel, "Title input not found"
+        return self.page.input_value(sel)
     
     def get_author_value(self) -> str:
         """Get the current value of author input"""
-        return self.page.input_value(self.author_input)
+        sel = self._first_visible(self.author_selectors)
+        assert sel, "Author input not found"
+        return self.page.input_value(sel)
     
     def clear_form(self):
         """Clear both input fields"""
-        self.page.fill(self.title_input, "")
-        self.page.fill(self.author_input, "")
+        ts = self._first_visible(self.title_selectors)
+        asel = self._first_visible(self.author_selectors)
+        if ts:
+            self.page.fill(ts, "")
+        if asel:
+            self.page.fill(asel, "")

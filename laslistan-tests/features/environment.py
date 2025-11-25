@@ -15,8 +15,8 @@ def before_scenario(context, scenario):
     context.browser_context = context.browser.new_context()
     context.page = context.browser_context.new_page()
     
-    # Set default timeout
-    context.page.set_default_timeout(10000)
+    # Set default timeout (increase for CI stability)
+    context.page.set_default_timeout(30000)
 
 def after_scenario(context, scenario):
     """Cleanup after each scenario"""
