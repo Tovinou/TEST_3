@@ -29,7 +29,7 @@ class AddBookPage(BasePage):
         for s in selectors:
             locator = self.page.locator(s).first
             try:
-                locator.wait_for(state="visible", timeout=30000)
+                locator.wait_for(state="visible", timeout=10000)
                 return s
             except Exception:
                 continue
@@ -61,7 +61,7 @@ class AddBookPage(BasePage):
         """Click the submit button"""
         sel = self._first_visible(self.submit_selectors)
         assert sel, "Submit button not found"
-        self.page.click(sel, timeout=30000)
+        self.page.click(sel, timeout=10000)
         self.page.wait_for_timeout(500)  # Wait for book to be added
     
     def add_book(self, title: str, author: str):

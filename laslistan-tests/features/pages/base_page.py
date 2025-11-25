@@ -10,7 +10,11 @@ class BasePage:
     def navigate(self):
         """Navigate to the page"""
         self.page.goto(self.base_url)
-        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_load_state("domcontentloaded")
+        try:
+            self.page.locator('[data-testid="nav-catalog"]').first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            pass
     
     def click_navigation_tab(self, tab_name: str):
         """Click on a navigation tab"""
@@ -33,7 +37,7 @@ class BasePage:
             for sel in candidates[tab_name]:
                 locator = self.page.locator(sel).first
                 try:
-                    locator.wait_for(state="visible", timeout=30000)
+                    locator.wait_for(state="visible", timeout=10000)
                     locator.click()
                     self.page.wait_for_load_state("networkidle")
                     return
@@ -44,6 +48,6 @@ class BasePage:
         """Get the welcome message text"""
         return self.page.locator("h1, h2").first.text_content()
     
-    def wait_for_element(self, selector: str, timeout: int = 30000):
+    def wait_for_element(self, selector: str, timeout: int = 10000):
         """Wait for an element to be visible"""
         self.page.locator(selector).wait_for(state="visible", timeout=timeout)
