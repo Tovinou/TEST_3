@@ -1,13 +1,13 @@
-Feature: Bokkatalogens
+Feature: Bokkatalogen
   Som användare
-  Vill jag se och interagera med bokkatalogens
+  Vill jag se och interagera med bokkatalogen
   Så att jag kan välja böcker som intresserar mig
 
   Background:
     Given jag är på webbplatsen
     And jag är på katalogvyn
 
-  Scenario: Visa bokkatalogens
+  Scenario: Visa bokkatalogen
     Then ska jag se böcker i katalogen
     And varje bok ska visa titel och författare
 
