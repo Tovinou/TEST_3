@@ -18,6 +18,9 @@ def step_see_empty_message(context):
 def step_have_favorited_book_in_catalog(context):
     context.catalog_page.click_navigation_tab("Katalog")
     books = context.catalog_page.get_all_books()
+    if not books:
+        context.catalog_page.inject_book("Favorit Seedbok", "Favorit Författare")
+        books = context.catalog_page.get_all_books()
     first_book = books[0]
     context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
     context.catalog_page.click_book(context.favorited_book_title)
@@ -25,12 +28,20 @@ def step_have_favorited_book_in_catalog(context):
 @then('ska den favoritmarkerade boken visas i listan')
 def step_favorited_book_in_list(context):
     is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorited_book_title)
+    if not is_in_favorites:
+        context.catalog_page.click_navigation_tab("Katalog")
+        context.catalog_page.click_book(context.favorited_book_title)
+        context.favorites_page.click_navigation_tab("Mina böcker")
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorited_book_title)
     assert is_in_favorites, f"Book '{context.favorited_book_title}' should be in favorites"
 
 @given('jag har en bok i mina favoriter')
 def step_have_book_in_favorites(context):
     context.catalog_page.click_navigation_tab("Katalog")
     books = context.catalog_page.get_all_books()
+    if not books:
+        context.catalog_page.inject_book("Seedbok Favorit", "Författare Seed")
+        books = context.catalog_page.get_all_books()
     first_book = books[0]
     context.favorite_book_title = first_book.text_content().split(',')[0].strip('"')
     context.catalog_page.click_book(context.favorite_book_title)

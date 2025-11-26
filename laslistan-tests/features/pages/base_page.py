@@ -20,20 +20,21 @@ class BasePage:
         """Click on a navigation tab"""
         candidates = {
             "Katalog": [
-                'text=/^\s*Katalog\s*$/',
+                r'text=/^\s*Katalog\s*$/',
                 '[data-testid="nav-catalog"]'
             ],
             "Lägg till bok": [
-                'text=/Lägg\s+till\s+bok|Lägg\s+till\s+ny\s+bok/i',
+                r'text=/Lägg\s+till\s+bok|Lägg\s+till\s+ny\s+bok/i',
                 '[data-testid="nav-add"]'
             ],
             "Mina böcker": [
-                'text=/Mina\s+böcker|Favoriter/i',
+                r'text=/Mina\s+böcker|Favoriter/i',
                 '[data-testid="nav-favorites"]'
             ]
         }
 
         if tab_name in candidates:
+            # Try text/data-testid selectors
             for sel in candidates[tab_name]:
                 locator = self.page.locator(sel).first
                 try:
@@ -43,6 +44,24 @@ class BasePage:
                     return
                 except Exception:
                     continue
+            # Fallback: ARIA role-based link by name
+            try:
+                self.page.get_by_role("link", name=tab_name).click()
+                self.page.wait_for_load_state("networkidle")
+                return
+            except Exception:
+                pass
+            # Fallback: click nth navigation item
+            try:
+                nav = self.page.locator('nav').first
+                items = nav.locator('a, button').all()
+                index_map = {"Katalog": 0, "Lägg till bok": 1, "Mina böcker": 2}
+                idx = index_map.get(tab_name, 0)
+                if items and len(items) > idx:
+                    items[idx].click()
+                    self.page.wait_for_load_state("networkidle")
+            except Exception:
+                pass
     
     def get_welcome_message(self) -> str:
         """Get the welcome message text"""

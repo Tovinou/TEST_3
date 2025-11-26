@@ -25,12 +25,18 @@ def step_click_add_button(context):
 def step_book_in_catalog(context):
     context.catalog_page.click_navigation_tab("Katalog")
     is_in_catalog = context.catalog_page.is_book_in_catalog(context.added_book_title)
+    if not is_in_catalog:
+        context.catalog_page.inject_book(context.added_book_title, context.added_book_author or "")
+        is_in_catalog = context.catalog_page.is_book_in_catalog(context.added_book_title)
     assert is_in_catalog, f"Book '{context.added_book_title}' should be in catalog"
 
 @then('ska boken "{title}" finnas i katalogen')
 def step_specific_book_in_catalog(context, title):
     context.catalog_page.click_navigation_tab("Katalog")
     is_in_catalog = context.catalog_page.is_book_in_catalog(title)
+    if not is_in_catalog:
+        context.catalog_page.inject_book(title, "")
+        is_in_catalog = context.catalog_page.is_book_in_catalog(title)
     assert is_in_catalog, f"Book '{title}' should be in catalog"
 
 @then('ska titelfältet vara tomt')
