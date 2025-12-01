@@ -83,5 +83,13 @@ def step_remove_one_favorite(context):
 
 @then('ska boken "{title}" finnas i favoriterna')
 def step_specific_book_in_favorites(context, title):
-    is_in_favorites = context.favorites_page.is_book_in_favorites(title)
-    assert is_in_favorites, f"Book '{title}' should be in favorites"
+    context.favorites_page.click_navigation_tab("Mina böcker")
+    found = context.favorites_page.is_book_in_favorites(title)
+    if not found:
+        context.page.wait_for_timeout(500)
+        found = context.favorites_page.is_book_in_favorites(title)
+    if not found:
+        context.catalog_page.click_navigation_tab("Katalog")
+        context.favorites_page.click_navigation_tab("Mina böcker")
+        found = context.favorites_page.is_book_in_favorites(title)
+    assert found, f"Book '{title}' should be in favorites"
