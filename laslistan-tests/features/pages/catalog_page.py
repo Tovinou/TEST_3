@@ -30,21 +30,20 @@ class CatalogPage(BasePage):
     
     def get_all_books(self):
         """Get all book elements"""
-        # Prefer the list items within main content
-        try:
-            self.page.locator('main li').first.wait_for(state="visible", timeout=10000)
-        except Exception:
-            pass
-        sel = 'main li'
-        count = self.page.locator(sel).count()
-        if count > 0:
-            return self.page.locator(sel).all()
+        sel_main = 'main li'
+        count_main = self.page.locator(sel_main).count()
+        if count_main > 0:
+            return self.page.locator(sel_main).all()
         # Fallback to previous strategy
-        sel2 = self._first_selector_with_count()
-        return self.page.locator(sel2).all() if sel2 else []
+        sel_fallback = self._first_selector_with_count()
+        return self.page.locator(sel_fallback).all() if sel_fallback else []
     
     def get_book_count(self) -> int:
         """Get the number of books displayed"""
+        sel_main = 'main li'
+        count_main = self.page.locator(sel_main).count()
+        if count_main > 0:
+            return count_main
         sel = self._first_selector_with_count()
         return self.page.locator(sel).count() if sel else 0
     
