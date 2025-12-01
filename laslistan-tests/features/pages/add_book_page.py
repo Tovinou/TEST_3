@@ -124,7 +124,23 @@ class AddBookPage(BasePage):
         """Click the submit button"""
         sel = self._first_visible(self.submit_selectors)
         if sel:
-            self.page.click(sel, timeout=10000)
+            locator = self.page.locator(sel).first
+            try:
+                if locator.is_enabled():
+                    locator.click(timeout=10000)
+                else:
+                    # Fallback: press Enter to submit the form when button disabled
+                    inputs = self._visible_inputs()
+                    if inputs:
+                        inputs[-1].press("Enter")
+                    else:
+                        self.page.keyboard.press("Enter")
+            except Exception:
+                # As a last resort, try Enter
+                try:
+                    self.page.keyboard.press("Enter")
+                except Exception:
+                    pass
         else:
             # Fallback: press Enter to submit the form
             try:

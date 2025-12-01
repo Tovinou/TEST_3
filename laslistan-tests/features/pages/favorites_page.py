@@ -24,6 +24,13 @@ class FavoritesPage(BasePage):
         return locator.is_visible() if locator.count() > 0 else False
     
     def _first_selector_with_count(self):
+        # Prefer favorites list items within main
+        try:
+            self.page.locator('main li').first.wait_for(state="visible", timeout=10000)
+            if self.page.locator('main li').count() > 0:
+                return 'main li'
+        except Exception:
+            pass
         for sel in self.book_item_selectors:
             try:
                 count = self.page.locator(sel).count()
@@ -45,7 +52,7 @@ class FavoritesPage(BasePage):
     
     def get_favorite_by_title(self, title: str):
         """Get a favorite book element by its title"""
-        candidate = self.page.get_by_text(title, exact=False).first
+        candidate = self.page.locator('main li').filter(has_text=title).first
         try:
             candidate.wait_for(state="visible", timeout=10000)
             return candidate

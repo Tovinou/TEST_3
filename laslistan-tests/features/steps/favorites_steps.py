@@ -19,7 +19,10 @@ def step_have_favorited_book_in_catalog(context):
     context.catalog_page.click_navigation_tab("Katalog")
     books = context.catalog_page.get_all_books()
     if not books:
-        context.catalog_page.inject_book("Favorit Seedbok", "Favorit Författare")
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book("Favorit Seedbok", "Favorit Författare")
+        context.catalog_page.click_navigation_tab("Katalog")
         books = context.catalog_page.get_all_books()
     first_book = books[0]
     context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
@@ -40,7 +43,10 @@ def step_have_book_in_favorites(context):
     context.catalog_page.click_navigation_tab("Katalog")
     books = context.catalog_page.get_all_books()
     if not books:
-        context.catalog_page.inject_book("Seedbok Favorit", "Författare Seed")
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book("Seedbok Favorit", "Författare Seed")
+        context.catalog_page.click_navigation_tab("Katalog")
         books = context.catalog_page.get_all_books()
     first_book = books[0]
     context.favorite_book_title = first_book.text_content().split(',')[0].strip('"')

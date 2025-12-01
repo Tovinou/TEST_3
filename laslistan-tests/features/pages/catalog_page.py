@@ -30,10 +30,18 @@ class CatalogPage(BasePage):
     
     def get_all_books(self):
         """Get all book elements"""
-        sel = self._first_selector_with_count()
-        if sel:
+        # Prefer the list items within main content
+        try:
+            self.page.locator('main li').first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            pass
+        sel = 'main li'
+        count = self.page.locator(sel).count()
+        if count > 0:
             return self.page.locator(sel).all()
-        return []
+        # Fallback to previous strategy
+        sel2 = self._first_selector_with_count()
+        return self.page.locator(sel2).all() if sel2 else []
     
     def get_book_count(self) -> int:
         """Get the number of books displayed"""
@@ -42,18 +50,24 @@ class CatalogPage(BasePage):
     
     def get_book_by_title(self, title: str):
         """Get a book element by its title"""
-        # Prefer using a text match locator to find the element directly
-        candidate = self.page.get_by_text(title, exact=False).first
+        candidate = self.page.locator('main li').filter(has_text=title).first
         try:
             candidate.wait_for(state="visible", timeout=10000)
             return candidate
         except Exception:
             pass
+        # Fallback to search anywhere on page by text
+        candidate2 = self.page.get_by_text(title, exact=False).first
+        try:
+            candidate2.wait_for(state="visible", timeout=10000)
+            return candidate2
+        except Exception:
+            pass
         books = self.get_all_books()
         for book in books:
             try:
-                text = book.text_content()
-                if text and title in text:
+                text = book.text_content() or ""
+                if title in text:
                     return book
             except Exception:
                 continue
@@ -61,10 +75,19 @@ class CatalogPage(BasePage):
     
     def click_book(self, title: str):
         """Click on a book by title to favorite/unfavorite it"""
-        candidate = self.page.get_by_text(title, exact=False).first
+        candidate = self.page.locator('main li').filter(has_text=title).first
         try:
             candidate.wait_for(state="visible", timeout=10000)
             candidate.click()
+            self.page.wait_for_timeout(300)
+            return
+        except Exception:
+            pass
+        # Fallback: click by text anywhere
+        candidate2 = self.page.get_by_text(title, exact=False).first
+        try:
+            candidate2.wait_for(state="visible", timeout=10000)
+            candidate2.click()
             self.page.wait_for_timeout(300)
             return
         except Exception:
@@ -103,12 +126,11 @@ class CatalogPage(BasePage):
             self.click_book(title)
     
     def is_book_favorited(self, title: str) -> bool:
-        """Check if a book is favorited (has different background)"""
-        book = self.get_book_by_title(title)
-        if book:
-            background = book.evaluate("el => window.getComputedStyle(el).backgroundColor")
-            return background != "rgb(229, 229, 229)" and background != "rgba(0, 0, 0, 0)"
-        return False
+        """Check if a book is favorited by presence on favorites page"""
+        self.click_navigation_tab("Mina böcker")
+        present = self.page.locator('main li').filter(has_text=title).count() > 0
+        self.click_navigation_tab("Katalog")
+        return present
     
     def is_book_in_catalog(self, title: str) -> bool:
         """Check if a book with the given title exists in catalog"""

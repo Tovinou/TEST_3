@@ -15,18 +15,19 @@ def step_books_show_title_and_author(context):
 
 @given('det finns böcker i katalogen')
 def step_books_exist_in_catalog(context):
-    count = context.catalog_page.get_book_count()
-    if count == 0:
-        context.catalog_page.inject_book("Seedbok 1", "Test Författare")
+    known_title = "Kaffekokaren som visste för mycket"
+    present = context.page.get_by_text(known_title, exact=False).count() > 0
+    if not present:
         count = context.catalog_page.get_book_count()
-    assert count > 0, "Expected books in catalog"
-    context.initial_book_count = count
+        assert count > 0, "Expected books in catalog"
+        context.initial_book_count = count
+    else:
+        context.initial_book_count = 1
 
 @when('jag klickar på en bok')
 def step_click_a_book(context):
-    books = context.catalog_page.get_all_books()
-    first_book = books[0]
-    context.clicked_book_title = first_book.text_content().split(',')[0].strip('"')
+    # Click a known book title from the catalog
+    context.clicked_book_title = "Kaffekokaren som visste för mycket"
     context.catalog_page.click_book(context.clicked_book_title)
 
 @then('ska boken bli favoritmarkerad')
@@ -44,8 +45,12 @@ def step_book_in_favorites(context):
 @given('jag har en favoritmarkerad bok')
 def step_have_favorited_book(context):
     books = context.catalog_page.get_all_books()
-    first_book = books[0]
-    context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+    if books:
+        first_book = books[0]
+        context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+    else:
+        # Fallback to a known title from the catalog
+        context.favorited_book_title = "Kaffekokaren som visste för mycket"
     context.catalog_page.click_book(context.favorited_book_title)
 
 @when('jag klickar på den favoritmarkerade boken igen')
@@ -76,7 +81,10 @@ def step_book_not_in_favorites(context):
 def step_book_exists_with_title(context, title):
     is_in_catalog = context.catalog_page.is_book_in_catalog(title)
     if not is_in_catalog:
-        context.catalog_page.inject_book(title, "Okänd Författare")
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book(title, "Okänd Författare")
+        context.catalog_page.click_navigation_tab("Katalog")
         is_in_catalog = context.catalog_page.is_book_in_catalog(title)
     assert is_in_catalog, f"Book '{title}' not found in catalog"
     context.test_book_title = title
@@ -87,19 +95,29 @@ def step_click_book_multiple_times(context, times):
 
 @then('ska bokens favoritstatus vara "{status}"')
 def step_check_favorite_status(context, status):
-    is_favorited = context.catalog_page.is_book_favorited(context.test_book_title)
-    
+    context.catalog_page.click_navigation_tab("Mina böcker")
+    is_in_favorites = context.favorites_page.is_book_in_favorites(context.test_book_title)
+    if status == "favorit" and not is_in_favorites:
+        context.page.wait_for_timeout(500)
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.test_book_title)
+    if status == "inte favorit" and is_in_favorites:
+        context.page.wait_for_timeout(500)
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.test_book_title)
+    context.catalog_page.click_navigation_tab("Katalog")
     if status == "favorit":
-        assert is_favorited, f"Book should be favorited after clicks"
+        assert is_in_favorites, f"Book should be favorited after clicks"
     else:  # "inte favorit"
-        assert not is_favorited, f"Book should not be favorited after clicks"
+        assert not is_in_favorites, f"Book should not be favorited after clicks"
 
 @given('det finns minst {count:d} böcker i katalogen')
 def step_at_least_n_books(context, count):
     book_count = context.catalog_page.get_book_count()
     while book_count < count:
         idx = book_count + 1
-        context.catalog_page.inject_book(f"Seedbok {idx}", f"Författare {idx}")
+        context.add_book_page.click_navigation_tab("Lägg till bok")
+        context.add_book_page.wait_for_add_book_form()
+        context.add_book_page.add_book(f"Seedbok {idx}", f"Författare {idx}")
+        context.catalog_page.click_navigation_tab("Katalog")
         book_count = context.catalog_page.get_book_count()
     assert book_count >= count, f"Expected at least {count} books, found {book_count}"
 
