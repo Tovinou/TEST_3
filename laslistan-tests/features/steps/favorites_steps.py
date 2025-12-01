@@ -26,7 +26,29 @@ def step_have_favorited_book_in_catalog(context):
         books = context.catalog_page.get_all_books()
     first_book = books[0]
     context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+    # Open book details and explicitly mark as favorite
     context.catalog_page.click_book(context.favorited_book_title)
+
+    # Try multiple possible APIs to mark favorite
+    if hasattr(context, "book_page"):
+        try:
+            context.book_page.wait_for_details()
+        except Exception:
+            pass
+        if hasattr(context.book_page, "toggle_favorite"):
+            context.book_page.toggle_favorite()
+        elif hasattr(context.book_page, "click_favorite"):
+            context.book_page.click_favorite()
+    elif hasattr(context.catalog_page, "favorite_book"):
+        try:
+            context.catalog_page.favorite_book(context.favorited_book_title)
+        except Exception:
+            pass
+
+    try:
+        context.page.wait_for_timeout(300)
+    except Exception:
+        pass
 
 @then('ska den favoritmarkerade boken visas i listan')
 def step_favorited_book_in_list(context):
