@@ -65,4 +65,5 @@ def step_go_to_catalog(context):
 @when('jag favoritmarkerar boken "{title}"')
 def step_favorite_specific_book(context, title):
     context.catalog_page.click_book(title)
+    context.page.wait_for_timeout(500)
     
