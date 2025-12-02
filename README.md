@@ -31,7 +31,6 @@ Detta projekt innehåller automatiserade tester för webbapplikationen "Läslist
 ## Teknisk stack
 
 - **Python 3.x**
-- **pytest** - Test runner
 - **Playwright** - Browser automation
 - **behave** - BDD framework (Gherkin)
 
@@ -39,11 +38,11 @@ Detta projekt innehåller automatiserade tester för webbapplikationen "Läslist
 
 1. Klona projektet:
 \`\`\`bash
-git clone <your-repo-url>
-cd laslistan-tests
+git clone https://github.com/Tovinou/TEST_3.git
+cd TEST_3
 \`\`\`
 
-2. Skapa en virtuell miljö (rekommenderas):
+1. Skapa en virtuell miljö (rekommenderas):
 \`\`\`bash
 python -m venv venv
 
@@ -61,7 +60,7 @@ pip install -r requirements.txt
 
 4. Installera Playwright browsers:
 \`\`\`bash
-playwright install chromium
+playwright install
 \`\`\`
 
 ## Hur man startar projektet
@@ -74,8 +73,21 @@ behave
 
 ### Kör tester med synlig webbläsare (för debugging)
 
-\`\`\`bash
+```bash
 behave -D headless=false
+```
+
+### Kör tester med synlig webbläsare (Windows PowerShell)
+
+- Kör från repo-roten (`c:\Jensen\python\TEST_3`):
+```powershell
+$env:PYTHONPATH='laslistan-tests'; behave laslistan-tests/features -D headless=false
+```
+
+- Kör inne i testkatalogen (`c:\Jensen\python\TEST_3\laslistan-tests`):
+```powershell
+$env:PYTHONPATH='.'; behave features -D headless=false
+```
 \`\`\`
 
 ### Kör specifik feature
@@ -131,8 +143,20 @@ Alla tester ska vara gröna vid inlämning. Om något test misslyckas, kontrolle
 
 ## Författare
 
-[Ditt namn]
+[Komlan Tovinou]
 
 ## Datum
 
-2025-01-24
+2025-12-01
+ 
+## Snabbstart (Windows PowerShell)
+
+- Kör från repo-roten (`c:\Jensen\python\TEST_3`):
+```powershell
+$env:PYTHONPATH='laslistan-tests'; behave laslistan-tests/features -D headless=true
+```
+
+- Kör inne i testkatalogen (`c:\Jensen\python\TEST_3\laslistan-tests`):
+```powershell
+$env:PYTHONPATH='.'; behave features -D headless=true
+```
