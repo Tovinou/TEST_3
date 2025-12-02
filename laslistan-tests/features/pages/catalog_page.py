@@ -91,8 +91,6 @@ class CatalogPage(BasePage):
                         self.page.wait_for_timeout(300)
                     except Exception:
                         pass
-            if not self.is_book_favorited(title):
-                self._inject_favorite(title)
             return
         except Exception:
             pass
@@ -108,8 +106,6 @@ class CatalogPage(BasePage):
                     self.page.wait_for_timeout(300)
                 except Exception:
                     pass
-            if not self.is_book_favorited(title):
-                self._inject_favorite(title)
             return
         except Exception:
             pass
@@ -117,8 +113,6 @@ class CatalogPage(BasePage):
         if book:
             book.click()
             self.page.wait_for_timeout(300)
-            if not self.is_book_favorited(title):
-                self._inject_favorite(title)
 
     def inject_book(self, title: str, author: str):
         """Inject a book item into the catalog for testing when catalog is empty"""
@@ -143,29 +137,6 @@ class CatalogPage(BasePage):
         )
         self.page.wait_for_timeout(200)
     
-    def _inject_favorite(self, title: str):
-        self.click_navigation_tab("Mina böcker")
-        self.page.evaluate(
-            """
-            (t) => {
-                let list = document.querySelector('[data-testid="favorites-list"]')
-                    || document.querySelector('main ul')
-                    || document.querySelector('ul');
-                if (!list) {
-                    list = document.createElement('ul');
-                    const main = document.querySelector('main') || document.body;
-                    main.appendChild(list);
-                }
-                const li = document.createElement('li');
-                li.setAttribute('data-testid','favorite-item');
-                li.textContent = t;
-                list.appendChild(li);
-            }
-            """,
-            title
-        )
-        self.page.wait_for_timeout(200)
-        self.click_navigation_tab("Katalog")
     
     
     def click_book_multiple_times(self, title: str, times: int):
@@ -177,6 +148,11 @@ class CatalogPage(BasePage):
         """Check if a book is favorited by presence on favorites page"""
         self.click_navigation_tab("Mina böcker")
         present = self.page.locator('main li').filter(has_text=title).count() > 0
+        if not present:
+            try:
+                present = self.page.get_by_text(title, exact=False).count() > 0
+            except Exception:
+                present = False
         self.click_navigation_tab("Katalog")
         return present
     

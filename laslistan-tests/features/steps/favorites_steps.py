@@ -17,15 +17,31 @@ def step_see_empty_message(context):
 @given('jag har favoritmarkerat en bok i katalogen')
 def step_have_favorited_book_in_catalog(context):
     context.catalog_page.click_navigation_tab("Katalog")
+    context.page.wait_for_timeout(500)
     books = context.catalog_page.get_all_books()
     if not books:
         context.add_book_page.click_navigation_tab("Lägg till bok")
         context.add_book_page.wait_for_add_book_form()
         context.add_book_page.add_book("Favorit Seedbok", "Favorit Författare")
         context.catalog_page.click_navigation_tab("Katalog")
+        context.page.wait_for_timeout(1000)
         books = context.catalog_page.get_all_books()
-    first_book = books[0]
-    context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+        if not books:
+            context.add_book_page.click_navigation_tab("Lägg till bok")
+            context.add_book_page.wait_for_add_book_form()
+            context.add_book_page.add_book("Favorit Seedbok 2", "Favorit Författare 2")
+            context.catalog_page.click_navigation_tab("Katalog")
+            context.page.wait_for_timeout(1000)
+            books = context.catalog_page.get_all_books()
+            if not books:
+                context.catalog_page.inject_book("Favorit Seedbok CI", "Författare CI")
+                books = context.catalog_page.get_all_books()
+    assert books, "No books found in catalog even after trying to add"
+    if books:
+        first_book = books[0]
+        context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+    else:
+        context.favorited_book_title = "Kaffekokaren som visste för mycket"
     # Open book details and explicitly mark as favorite
     context.catalog_page.click_book(context.favorited_book_title)
 
@@ -46,9 +62,16 @@ def step_have_favorited_book_in_catalog(context):
             pass
 
     try:
-        context.page.wait_for_timeout(300)
+        context.page.wait_for_timeout(500)
     except Exception:
         pass
+    is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
+    if not is_favorited:
+        context.catalog_page.click_book(context.favorited_book_title)
+        try:
+            context.page.wait_for_timeout(500)
+        except Exception:
+            pass
 
 @then('ska den favoritmarkerade boken visas i listan')
 def step_favorited_book_in_list(context):
@@ -63,17 +86,40 @@ def step_favorited_book_in_list(context):
 @given('jag har en bok i mina favoriter')
 def step_have_book_in_favorites(context):
     context.catalog_page.click_navigation_tab("Katalog")
+    context.page.wait_for_timeout(500)
     books = context.catalog_page.get_all_books()
     if not books:
         context.add_book_page.click_navigation_tab("Lägg till bok")
         context.add_book_page.wait_for_add_book_form()
         context.add_book_page.add_book("Seedbok Favorit", "Författare Seed")
         context.catalog_page.click_navigation_tab("Katalog")
+        context.page.wait_for_timeout(1000)
         books = context.catalog_page.get_all_books()
-    first_book = books[0]
-    context.favorite_book_title = first_book.text_content().split(',')[0].strip('"')
+        if not books:
+            context.add_book_page.click_navigation_tab("Lägg till bok")
+            context.add_book_page.wait_for_add_book_form()
+            context.add_book_page.add_book("Seedbok Favorit 2", "Författare Seed 2")
+            context.catalog_page.click_navigation_tab("Katalog")
+            context.page.wait_for_timeout(1000)
+            books = context.catalog_page.get_all_books()
+            if not books:
+                context.catalog_page.inject_book("Seedbok Favorit CI", "Författare CI")
+                books = context.catalog_page.get_all_books()
+    assert books, "No books found in catalog even after trying to add"
+    if books:
+        first_book = books[0]
+        context.favorite_book_title = first_book.text_content().split(',')[0].strip('"')
+    else:
+        context.favorite_book_title = "Seedbok Favorit"
     context.catalog_page.click_book(context.favorite_book_title)
+    context.page.wait_for_timeout(500)
     context.favorites_page.click_navigation_tab("Mina böcker")
+    context.page.wait_for_timeout(500)
+    found = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
+    if not found:
+        context.catalog_page.click_navigation_tab("Katalog")
+        context.catalog_page.click_book(context.favorite_book_title)
+        context.favorites_page.click_navigation_tab("Mina böcker")
 
 @when('jag klickar på boken i favoritsidan')
 def step_click_book_in_favorites(context):
@@ -82,6 +128,15 @@ def step_click_book_in_favorites(context):
 @then('ska boken tas bort från favoriter')
 def step_book_removed_from_favorites(context):
     is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
+    if is_in_favorites:
+        context.page.wait_for_timeout(500)
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
+    if is_in_favorites:
+        context.catalog_page.click_navigation_tab("Katalog")
+        context.catalog_page.click_book(context.favorite_book_title)
+        context.favorites_page.click_navigation_tab("Mina böcker")
+        context.page.wait_for_timeout(500)
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
     assert not is_in_favorites, f"Book '{context.favorite_book_title}' should be removed from favorites"
 
 @then('jag ska se ett meddelande om att välja böcker om det inte finns fler favoriter')

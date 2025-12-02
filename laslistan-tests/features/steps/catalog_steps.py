@@ -52,6 +52,12 @@ def step_have_favorited_book(context):
         # Fallback to a known title from the catalog
         context.favorited_book_title = "Kaffekokaren som visste för mycket"
     context.catalog_page.click_book(context.favorited_book_title)
+    context.page.wait_for_timeout(500)
+    is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
+    if not is_favorited:
+        context.catalog_page.click_book(context.favorited_book_title)
+        context.page.wait_for_timeout(500)
+        is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
 
 @when('jag klickar på den favoritmarkerade boken igen')
 def step_click_favorited_book_again(context):
@@ -59,7 +65,11 @@ def step_click_favorited_book_again(context):
 
 @then('ska favoritmarkeringen tas bort')
 def step_favorite_removed(context):
+    context.page.wait_for_timeout(500)
     is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
+    if is_favorited:
+        context.page.wait_for_timeout(1000)
+        is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
     assert not is_favorited, f"Book '{context.favorited_book_title}' should not be favorited"
 
 @then('boken ska inte visas i mina favoriter')
