@@ -13,6 +13,9 @@ class MyBooksPage:
         """Navigates to the My Books page."""
         self.page.get_by_role("link", name="Mina böcker").click()
 
+    def wait_for_element(self, selector: str, timeout: int = 10000):
+        self.page.locator(selector).first.wait_for(state="visible", timeout=timeout)
+
     def click_navigation_tab(self, name: str):
         candidates = {
             "Katalog": [
@@ -134,3 +137,7 @@ class MyBooksPage:
             self.page.wait_for_timeout(200)
         except Exception:
             pass
+
+class FavoritesPage(MyBooksPage):
+    def __init__(self, page: Page, base_url: str | None = None):
+        super().__init__(page)
