@@ -21,8 +21,9 @@ def before_scenario(context, scenario):
     context.page = context.browser.new_page()
     
     # --- Instantiate Page Objects ---
-    context.catalog_page = CatalogPage(context.page)
-    context.add_book_page = AddBookPage(context.page)
+    context.base_url = BASE_URL
+    context.catalog_page = CatalogPage(context.page, BASE_URL)
+    context.add_book_page = AddBookPage(context.page, BASE_URL)
     my_books = MyBooksPage(context.page)
     context.my_books_page = my_books
     context.favorites_page = my_books
