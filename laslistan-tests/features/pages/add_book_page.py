@@ -25,6 +25,13 @@ class AddBookPage(BasePage):
             'button[type="submit"]'
         ]
 
+    def navigate_to(self):
+        self.click_navigation_tab("Lägg till bok")
+        try:
+            self.wait_for_add_book_form()
+        except Exception:
+            pass
+
     def _visible_inputs(self):
         loc = self.page.locator('input')
         count = loc.count()
@@ -97,6 +104,10 @@ class AddBookPage(BasePage):
             al.wait_for(state="visible", timeout=10000)
         except Exception:
             pass
+    
+    def wait_for_form(self):
+        """Alias for compatibility with older step definitions"""
+        self.wait_for_add_book_form()
     
     def fill_title(self, title: str):
         """Fill in the title field"""

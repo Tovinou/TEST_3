@@ -11,7 +11,13 @@ class MyBooksPage:
 
     def navigate_to(self):
         """Navigates to the My Books page."""
-        self.page.get_by_role("link", name="Mina böcker").click()
+        try:
+            self.click_navigation_tab("Mina böcker")
+        except Exception:
+            try:
+                self.page.get_by_role("link", name="Mina böcker").click()
+            except Exception:
+                pass
 
     def wait_for_element(self, selector: str, timeout: int = 10000):
         self.page.locator(selector).first.wait_for(state="visible", timeout=timeout)

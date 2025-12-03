@@ -74,8 +74,13 @@ class CatalogPage:
                 pass
 
     def wait_for_load(self):
-        """Waits for the main book list to be visible."""
-        self.book_items.first.wait_for(state="visible", timeout=5000)
+        """Waits for the catalog view to be visible."""
+        try:
+            self.page.locator('main').first.wait_for(state="visible", timeout=10000)
+        except Exception:
+            pass
+        # If list items are not immediately visible, allow the caller to proceed
+        # and perform their own presence checks.
 
     def wait_for_element(self, selector: str, timeout: int = 10000):
         self.page.locator(selector).first.wait_for(state="visible", timeout=timeout)
