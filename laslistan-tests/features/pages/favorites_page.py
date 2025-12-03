@@ -1,153 +1,43 @@
-from playwright.sync_api import Page
-from features.pages.base_page import BasePage
+from playwright.sync_api import Page, expect
 
-class FavoritesPage(BasePage):
-    """Page object for the Favorites page (Mina böcker)"""
-    
-    def __init__(self, page: Page, base_url: str):
-        super().__init__(page, base_url)
-        self.book_item_selectors = [
-            '[data-testid="book-item"]',
-            '.book-item',
-            'ul li',
-            'main li'
-        ]
-    
-    def get_empty_message(self) -> str:
-        """Get the message shown when there are no favorites"""
-        locator = self.page.locator("text=När du valt")
-        return locator.text_content() if locator.count() > 0 else ""
-    
-    def is_empty_message_visible(self) -> bool:
-        """Check if the empty message is visible"""
-        locator = self.page.locator("text=När du valt")
-        return locator.is_visible() if locator.count() > 0 else False
-    
-    def _first_selector_with_count(self):
-        # Prefer favorites list items within main
-        try:
-            self.page.locator('main li').first.wait_for(state="visible", timeout=10000)
-            if self.page.locator('main li').count() > 0:
-                return 'main li'
-        except Exception:
-            pass
-        for sel in self.book_item_selectors:
-            try:
-                count = self.page.locator(sel).count()
-                if count > 0:
-                    return sel
-            except Exception:
-                continue
-        return None
-    
-    def get_favorite_books(self):
-        """Get all favorite book elements"""
-        sel = self._first_selector_with_count()
-        return self.page.locator(sel).all() if sel else []
-    
-    def get_favorite_count(self) -> int:
-        sel = self._first_selector_with_count()
-        if not sel:
-            return 0
-        try:
-            self.page.wait_for_load_state("networkidle")
-        except Exception:
-            pass
-        count = self.page.locator(sel).count()
-        if count == 0:
-            try:
-                self.page.wait_for_timeout(800)
-            except Exception:
-                pass
-            count = self.page.locator(sel).count()
-        return count
-    
-    def get_favorite_by_title(self, title: str):
-        """Get a favorite book element by its title"""
-        candidate = self.page.locator('main li').filter(has_text=title).first
-        try:
-            candidate.wait_for(state="visible", timeout=10000)
-            return candidate
-        except Exception:
-            pass
-        # Fallback: search anywhere by text
-        try:
-            candidate2 = self.page.get_by_text(title, exact=False).first
-            candidate2.wait_for(state="visible", timeout=10000)
-            return candidate2
-        except Exception:
-            pass
-        books = self.get_favorite_books()
-        for book in books:
-            if title in (book.text_content() or ""):
-                return book
-        return None
-    
+class MyBooksPage:
+    """
+    Page Object for the My Books (Favorites) page.
+    """
+    def __init__(self, page: Page):
+        self.page = page
+        self.favorite_book_items = page.locator("main li")
+        self.empty_list_message = page.get_by_text("När du valt, kommer dina favoritböcker att visas här.")
+
+    def navigate_to(self):
+        """Navigates to the My Books page."""
+        self.page.get_by_role("link", name="Mina böcker").click()
+
+    def get_favorite_book_titles(self) -> list[str]:
+        """
+        Get a list of all favorite book titles.
+        """
+        self.favorite_book_items.first.wait_for(state="visible", timeout=5000)
+        return self.favorite_book_items.all_inner_texts()
+
     def is_book_in_favorites(self, title: str) -> bool:
+        """
+        Checks if a book with the given title is in the favorites list.
+        """
+        # Wait for either the list or the empty message to be visible
         try:
-            self.page.wait_for_load_state("networkidle")
-        except Exception:
-            pass
-        book = self.get_favorite_by_title(title)
-        if book is None:
-            try:
-                self.page.wait_for_timeout(800)
-            except Exception:
-                pass
-            book = self.get_favorite_by_title(title)
-        return book is not None
-    
-    def remove_favorite(self, title: str):
-        """Remove a book from favorites by clicking it"""
-        book = self.get_favorite_by_title(title)
-        if book:
-            try:
-                btn = book.locator('button, [role="button"], [data-testid="favorite"], svg, .favorite').first
-                if btn.count() > 0:
-                    btn.click()
-                    self.page.wait_for_timeout(300)
-                else:
-                    book.click()
-                    self.page.wait_for_timeout(300)
-                    try:
-                        book.press("Enter")
-                        self.page.wait_for_timeout(300)
-                    except Exception:
-                        pass
-            except Exception:
-                book.click()
-                self.page.wait_for_timeout(300)
-        if self.is_book_in_favorites(title):
-            try:
-                from features.pages.catalog_page import CatalogPage
-                CatalogPage(self.page, "").click_navigation_tab("Katalog")
-                CatalogPage(self.page, "").click_book(title)
-                self.click_navigation_tab("Mina böcker")
-                self.page.wait_for_timeout(300)
-            except Exception:
-                pass
+            self.favorite_book_items.first.wait_for(state="visible", timeout=3000)
+        except:
+            self.empty_list_message.wait_for(state="visible", timeout=3000)
 
-    def inject_favorite(self, title: str):
-        try:
-            self.page.evaluate(
-                """
-                (t) => {
-                    let list = document.querySelector('[data-testid="favorites-list"]')
-                        || document.querySelector('main ul')
-                        || document.querySelector('ul');
-                    if (!list) {
-                        list = document.createElement('ul');
-                        const main = document.querySelector('main') || document.body;
-                        main.appendChild(list);
-                    }
-                    const li = document.createElement('li');
-                    li.setAttribute('data-testid','favorite-item');
-                    li.textContent = t;
-                    list.appendChild(li);
-                }
-                """,
-                title
-            )
-            self.page.wait_for_timeout(200)
-        except Exception:
-            pass
+        # Check if any item in the list contains the book title
+        for item_text in self.favorite_book_items.all_inner_texts():
+            if title in item_text:
+                return True
+        return False
+
+    def is_empty_message_visible(self) -> bool:
+        """
+        Checks if the empty list message is visible.
+        """
+        return self.empty_list_message.is_visible()
