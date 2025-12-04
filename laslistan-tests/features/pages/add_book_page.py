@@ -104,10 +104,24 @@ class AddBookPage(BasePage):
             al.wait_for(state="visible", timeout=10000)
         except Exception:
             pass
-    
+
     def wait_for_form(self):
         """Alias for compatibility with older step definitions"""
         self.wait_for_add_book_form()
+
+    @property
+    def title_input(self):
+        loc = self._title_locator()
+        if loc:
+            return loc
+        return self.page.get_by_label("Titel")
+
+    @property
+    def author_input(self):
+        loc = self._author_locator()
+        if loc:
+            return loc
+        return self.page.get_by_label("Författare")
     
     def fill_title(self, title: str):
         """Fill in the title field"""

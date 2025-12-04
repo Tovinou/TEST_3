@@ -1,5 +1,11 @@
 from behave import given, when, then
 
+def _norm_title(text: str) -> str:
+    t = (text or "")
+    for ch in ["❤️", "💔", "“", "”"]:
+        t = t.replace(ch, "")
+    return t.strip().strip('"')
+
 @given('jag inte har några favoriter')
 def step_no_favorites(context):
     # Fresh start, no favorites yet
@@ -39,11 +45,11 @@ def step_have_favorited_book_in_catalog(context):
     assert books, "No books found in catalog even after trying to add"
     if books:
         first_book = books[0]
-        context.favorited_book_title = first_book.text_content().split(',')[0].strip('"')
+        context.favorited_book_title = _norm_title(first_book.text_content().split(',')[0])
     else:
         context.favorited_book_title = "Kaffekokaren som visste för mycket"
     # Open book details and explicitly mark as favorite
-    context.catalog_page.click_book(context.favorited_book_title)
+    context.catalog_page.toggle_favorite(context.favorited_book_title)
 
     # Try multiple possible APIs to mark favorite
     if hasattr(context, "book_page"):
@@ -67,7 +73,7 @@ def step_have_favorited_book_in_catalog(context):
         pass
     is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
     if not is_favorited:
-        context.catalog_page.click_book(context.favorited_book_title)
+        context.catalog_page.toggle_favorite(context.favorited_book_title)
         try:
             context.page.wait_for_timeout(500)
         except Exception:
@@ -108,10 +114,10 @@ def step_have_book_in_favorites(context):
     assert books, "No books found in catalog even after trying to add"
     if books:
         first_book = books[0]
-        context.favorite_book_title = first_book.text_content().split(',')[0].strip('"')
+        context.favorite_book_title = _norm_title(first_book.text_content().split(',')[0])
     else:
         context.favorite_book_title = "Seedbok Favorit"
-    context.catalog_page.click_book(context.favorite_book_title)
+    context.catalog_page.toggle_favorite(context.favorite_book_title)
     context.page.wait_for_timeout(500)
     context.favorites_page.click_navigation_tab("Mina böcker")
     context.page.wait_for_timeout(500)
@@ -155,7 +161,7 @@ def step_see_n_favorites(context, count):
 def step_remove_one_favorite(context):
     books = context.favorites_page.get_favorite_books()
     if books:
-        first_book_title = books[0].text_content().split(',')[0].strip('"')
+        first_book_title = _norm_title(books[0].text_content().split(',')[0])
         context.favorites_page.remove_favorite(first_book_title)
 
 @then('ska boken "{title}" finnas i favoriterna')

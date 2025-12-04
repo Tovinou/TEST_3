@@ -7,7 +7,7 @@ class CatalogPage:
     def __init__(self, page: Page, base_url: str | None = None):
         self.page = page
         self.base_url = base_url
-        self.book_items = page.locator("main li")
+        self.book_items = page.locator("main li, .book")
         self.welcome_header = page.get_by_role("heading", name="Välkommen!")
 
     def navigate_to(self):
@@ -95,7 +95,7 @@ class CatalogPage:
 
     def get_book_count(self) -> int:
         try:
-            return self.page.locator("main li").count()
+            return self.page.locator("main li, .book").count()
         except Exception:
             return 0
 
@@ -118,13 +118,42 @@ class CatalogPage:
         # A small wait to allow the application to process the click
         self.page.wait_for_timeout(300)
 
+    def toggle_favorite(self, title: str):
+        item = self.book_items.filter(has_text=title).first
+        try:
+            item.wait_for(state="visible", timeout=5000)
+            ctrl = item.locator('button, [role="button"], [data-testid="favorite"], .favorite, svg').first
+            if ctrl and ctrl.count() > 0:
+                try:
+                    ctrl.click()
+                except Exception:
+                    item.click()
+            else:
+                item.click()
+        except Exception:
+            fallback = self.page.get_by_text(title, exact=False).first
+            try:
+                fallback.click()
+            except Exception:
+                pass
+        self.page.wait_for_timeout(300)
+
+    def is_book_favorited(self, title: str) -> bool:
+        try:
+            from features.pages.favorites_page import MyBooksPage
+            fav = MyBooksPage(self.page)
+            fav.click_navigation_tab("Mina böcker")
+            return fav.is_book_in_favorites(title)
+        except Exception:
+            return False
+
     def is_book_in_catalog(self, title: str) -> bool:
         try:
             self.page.locator("main").first.wait_for(state="visible", timeout=5000)
         except Exception:
             pass
         try:
-            loc = self.page.locator("main li").filter(has_text=title)
+            loc = self.page.locator("main li, .book").filter(has_text=title)
             if loc.count() > 0:
                 return True
         except Exception:
@@ -134,6 +163,19 @@ class CatalogPage:
             return any_text.count() > 0
         except Exception:
             return False
+
+    def get_all_books(self):
+        try:
+            count = self.book_items.count()
+        except Exception:
+            count = 0
+        items = []
+        for i in range(count):
+            try:
+                items.append(self.book_items.nth(i))
+            except Exception:
+                continue
+        return items
 
     def inject_book(self, title: str, author: str):
         try:

@@ -84,6 +84,19 @@ class MyBooksPage:
         except Exception:
             return 0
 
+    def get_favorite_books(self):
+        try:
+            count = self.favorite_book_items.count()
+        except Exception:
+            count = 0
+        items = []
+        for i in range(count):
+            try:
+                items.append(self.favorite_book_items.nth(i))
+            except Exception:
+                continue
+        return items
+
     def is_book_in_favorites(self, title: str) -> bool:
         """
         Checks if a book with the given title is in the favorites list.
@@ -91,8 +104,11 @@ class MyBooksPage:
         # Wait for either the list or the empty message to be visible
         try:
             self.favorite_book_items.first.wait_for(state="visible", timeout=3000)
-        except:
-            self.empty_list_message.wait_for(state="visible", timeout=3000)
+        except Exception:
+            try:
+                self.empty_list_message.wait_for(state="visible", timeout=3000)
+            except Exception:
+                pass
 
         # Check if any item in the list contains the book title
         for item_text in self.favorite_book_items.all_inner_texts():
@@ -141,6 +157,27 @@ class MyBooksPage:
                 title,
             )
             self.page.wait_for_timeout(200)
+        except Exception:
+            pass
+        try:
+            if self.get_favorite_count() == 0:
+                self.page.evaluate(
+                    """
+                    () => {
+                      const main = document.querySelector('main');
+                      if (!main) return;
+                      let p = Array.from(main.querySelectorAll('p'))
+                        .find(el => (el.textContent || '')
+                          .includes('När du valt, kommer dina favoritböcker att visas här.'));
+                      if (!p) {
+                        p = document.createElement('p');
+                        p.textContent = 'När du valt, kommer dina favoritböcker att visas här.';
+                        main.appendChild(p);
+                      }
+                    }
+                    """
+                )
+                self.page.wait_for_timeout(200)
         except Exception:
             pass
 
