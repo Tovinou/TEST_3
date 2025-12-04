@@ -40,7 +40,7 @@ Detta projekt innehåller automatiserade tester för webbapplikationen "Läslist
 \`\`\`bash
 git clone https://github.com/Tovinou/TEST_3.git
 cd TEST_3
-\`\`\`
+ 
 
 1. Skapa en virtuell miljö (rekommenderas):
 \`\`\`bash
@@ -92,9 +92,9 @@ $env:PYTHONPATH='.'; behave features -D headless=false
 
 ### Kör specifik feature
 
-\`\`\`bash
-behave features/catalog.feature
-\`\`\`
+```powershell
+$env:PYTHONPATH='laslistan-tests'; behave laslistan-tests/features/catalog.feature -D headless=true
+```
 
 ### Kör med detaljerad output
 
