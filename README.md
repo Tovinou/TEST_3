@@ -1,6 +1,6 @@
 # Läslistan - Test Automation Project
 
-Detta projekt innehåller automatiserade tester för webbapplikationen "Läslistan" (https://tap-vt25-testverktyg.github.io/exam--reading-list/).
+Det här projektet innehåller automatiserade tester för webbapplikationen "Läslistan" (https://tap-vt25-testverktyg.github.io/exam--reading-list/).
 
 ## Vad har testats
 
@@ -37,13 +37,13 @@ Detta projekt innehåller automatiserade tester för webbapplikationen "Läslist
 ## Installation
 
 1. Klona projektet:
-\`\`\`bash
+```bash
 git clone https://github.com/Tovinou/TEST_3.git
 cd TEST_3
  
 
 1. Skapa en virtuell miljö (rekommenderas):
-\`\`\`bash
+```bash
 python -m venv venv
 
 # Windows
@@ -51,25 +51,25 @@ venv\Scripts\activate
 
 # Mac/Linux
 source venv/bin/activate
-\`\`\`
+```
 
 3. Installera dependencies:
-\`\`\`bash
+```bash
 pip install -r requirements.txt
-\`\`\`
+```
 
 4. Installera Playwright browsers:
-\`\`\`bash
+```bash
 playwright install
-\`\`\`
+```
 
 ## Hur man startar projektet
 
 ### Kör alla tester
 
-\`\`\`bash
+```bash
 behave
-\`\`\`
+```
 
 ### Kör tester med synlig webbläsare (för debugging)
 
@@ -88,7 +88,7 @@ $env:PYTHONPATH='laslistan-tests'; behave laslistan-tests/features -D headless=f
 ```powershell
 $env:PYTHONPATH='.'; behave features -D headless=false
 ```
-\`\`\`
+```
 
 ### Kör specifik feature
 
@@ -98,20 +98,20 @@ $env:PYTHONPATH='laslistan-tests'; behave laslistan-tests/features/catalog.featu
 
 ### Kör med detaljerad output
 
-\`\`\`bash
+```bash
 behave -v
-\`\`\`
+```
 
 ### Generera HTML-rapport (om allure är installerat)
 
-\`\`\`bash
+```bash
 behave -f allure_behave.formatter:AllureFormatter -o reports/
 allure serve reports/
-\`\`\`
+```
 
 ## Projektstruktur
 
-\`\`\`
+```
 laslistan-tests/
 ├── features/
 │   ├── catalog.feature          # Tester för katalog-funktionalitet
@@ -132,7 +132,7 @@ laslistan-tests/
 ├── README.md                    # Denna fil
 ├── STORIES.md                   # User stories
 └── requirements.txt             # Python dependencies
-\`\`\`
+```
 
 ## Testresultat
 
