@@ -17,14 +17,15 @@ Det här är det enda projektet för inlämning. Fokus är snabba, rena tester a
 - `playwright install`
 
 **Köra tester**
-- `pytest -q tests/test_agile_helper.py`
+- Snabb körning: `pytest -q tests/test_agile_helper.py`
+- Visa webbläsaren: `pytest -q tests/test_agile_helper.py --headed --browser chromium`
+- Mäta total tid (PowerShell): `Measure-Command { pytest -q tests/test_agile_helper.py } | % { $_.TotalSeconds }`
 
 **Struktur**
 - `tests/test_agile_helper.py` innehåller de bedömda testerna.
-- `laslistan-tests/` finns kvar som legacy, men är inte del av den bedömda sviten.
 
 **GitHub Actions**
-- Push till main/feature‑branch triggar workflow i `.github/workflows/run-tests.yml`.
+- Workflow `.github/workflows/run-tests.yml` kör enbart pytest‑sviten för att garantera <5s total tid.
 
 **Kontakt**
 - Författare: Komlan Tovinou
