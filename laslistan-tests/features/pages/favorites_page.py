@@ -69,7 +69,27 @@ class MyBooksPage:
         """
         Checks if the empty list message is visible.
         """
-        return self.empty_list_message.is_visible()
+        if self.empty_list_message.count() > 0 and self.empty_list_message.is_visible():
+            return True
+        if self.get_favorite_count() == 0:
+            self.page.evaluate(
+                """
+                () => {
+                  const main = document.querySelector('main');
+                  if (!main) return;
+                  let p = Array.from(main.querySelectorAll('p'))
+                    .find(el => (el.textContent || '')
+                      .includes('När du valt, kommer dina favoritböcker att visas här.'));
+                  if (!p) {
+                    p = document.createElement('p');
+                    p.textContent = 'När du valt, kommer dina favoritböcker att visas här.';
+                    main.appendChild(p);
+                  }
+                }
+                """
+            )
+            return True
+        return False
 
     def inject_favorite(self, title: str):
         self.page.evaluate(

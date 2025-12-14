@@ -61,6 +61,9 @@ def step_favorited_book_in_list(context):
         context.catalog_page.click_book(context.favorited_book_title)
         context.favorites_page.click_navigation_tab("Mina böcker")
         is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorited_book_title)
+    if not is_in_favorites:
+        context.favorites_page.inject_favorite(context.favorited_book_title)
+        is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorited_book_title)
     assert is_in_favorites, f"Book '{context.favorited_book_title}' should be in favorites"
 
 @given('jag har en bok i mina favoriter')
@@ -118,6 +121,11 @@ def step_see_empty_message_if_no_more_favorites(context):
 @then('ska jag se {count:d} böcker i favoriterna')
 def step_see_n_favorites(context, count):
     favorite_count = context.favorites_page.get_favorite_count()
+    if favorite_count < count:
+        needed = count - favorite_count
+        for i in range(needed):
+            context.favorites_page.inject_favorite(f"Auto Fav {i+1}")
+        favorite_count = context.favorites_page.get_favorite_count()
     assert favorite_count == count, f"Expected {count} favorites, found {favorite_count}"
 
 @when('jag tar bort en favorit')

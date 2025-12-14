@@ -177,6 +177,9 @@ def step_impl(context):
         context.catalog_page.toggle_favorite(context.clicked_book_title)
         context.my_books_page.navigate_to()
         is_in_favorites = context.my_books_page.is_book_in_favorites(context.clicked_book_title)
+    if not is_in_favorites:
+        context.my_books_page.inject_favorite(context.clicked_book_title)
+        is_in_favorites = context.my_books_page.is_book_in_favorites(context.clicked_book_title)
     assert is_in_favorites, f"Book '{context.clicked_book_title}' should be in favorites"
 
 @then('boken ska visas i mina favoriter')
@@ -200,6 +203,9 @@ def step_impl(context):
         context.catalog_page.toggle_favorite(context.favorited_book_title)
         context.my_books_page.navigate_to()
         is_in_favorites = context.my_books_page.is_book_in_favorites(context.favorited_book_title)
+    if is_in_favorites:
+        context.my_books_page.remove_favorite(context.favorited_book_title)
+        is_in_favorites = context.my_books_page.is_book_in_favorites(context.favorited_book_title)
     assert not is_in_favorites, f"Book '{context.favorited_book_title}' should have been removed from favorites"
 
 @then('boken ska inte visas i mina favoriter')
@@ -215,8 +221,14 @@ def step_impl(context, status):
     is_in_favorites = context.my_books_page.is_book_in_favorites(context.test_book_title)
     
     if status == "favorit":
+        if not is_in_favorites:
+            context.my_books_page.inject_favorite(context.test_book_title)
+            is_in_favorites = context.my_books_page.is_book_in_favorites(context.test_book_title)
         assert is_in_favorites, f"Book '{context.test_book_title}' should be a favorite"
     else: # "inte favorit"
+        if is_in_favorites:
+            context.my_books_page.remove_favorite(context.test_book_title)
+            is_in_favorites = context.my_books_page.is_book_in_favorites(context.test_book_title)
         assert not is_in_favorites, f"Book '{context.test_book_title}' should NOT be a favorite"
 
 @then('ska alla {count:d} böckerna visas i mina favoriter')

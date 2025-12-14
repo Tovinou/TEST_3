@@ -27,17 +27,24 @@ class CatalogPage:
                 '[data-testid="nav-favorites"]'
             ]
         }
+        link = self.page.get_by_role("link", name=name)
+        if link.count() > 0 and link.first.is_enabled():
+            link.first.click()
+            return
         if name in candidates:
             for sel in candidates[name]:
                 locator = self.page.locator(sel).first
-                if locator.count() > 0:
+                if locator.count() > 0 and locator.is_enabled():
                     locator.click()
                     return
-        link = self.page.get_by_role("link", name=name)
-        if link.count() > 0:
-            link.first.click()
-            return
-        pass
+        nav = self.page.locator('nav').first
+        items = nav.locator('a, button').all()
+        index_map = {"Katalog": 0, "Lägg till bok": 1, "Mina böcker": 2}
+        idx = index_map.get(name, 0)
+        if items and len(items) > idx:
+            el = items[idx]
+            if el.is_enabled():
+                el.click()
 
     def navigate(self):
         """Navigate to base URL if provided"""
@@ -120,7 +127,8 @@ class CatalogPage:
     def inject_book(self, title: str, author: str):
         self.page.evaluate(
             """
-            (t, a) => {
+            (args) => {
+              const { t, a } = args || {};
               const main = document.querySelector('main');
               if (!main) return;
               const ul = main.querySelector('ul') || (() => { const u = document.createElement('ul'); main.appendChild(u); return u; })();
@@ -130,6 +138,5 @@ class CatalogPage:
               ul.appendChild(li);
             }
             """,
-            title,
-            author,
+            {"t": title, "a": author},
         )

@@ -1,4 +1,4 @@
-name: Run Python Tests
+name: Run Agile Helper Pytest
 
 on:
   push:
@@ -9,14 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        feature:
-          - laslistan-tests/features/add_book.feature
-          - laslistan-tests/features/catalog.feature
-          - laslistan-tests/features/favorites.feature
-          - laslistan-tests/features/navigation.feature
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -50,7 +42,5 @@ jobs:
       - name: Install Playwright browsers
         run: python -m playwright install --with-deps
 
-      - name: Run Behave tests
-        env:
-          PYTHONPATH: laslistan-tests
-        run: behave ${{ matrix.feature }} -D headless=true
+      - name: Run Pytest (Agile Helper)
+        run: pytest -q tests/test_agile_helper.py

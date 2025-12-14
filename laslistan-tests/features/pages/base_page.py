@@ -13,7 +13,6 @@ class BasePage:
         self.page.wait_for_load_state("domcontentloaded")
     
     def click_navigation_tab(self, tab_name: str):
-        """Click on a navigation tab"""
         candidates = {
             "Katalog": [
                 '[data-testid="nav-catalog"]'
@@ -26,17 +25,17 @@ class BasePage:
             ]
         }
 
+        link = self.page.get_by_role("link", name=tab_name)
+        if link.count() > 0 and link.first.is_enabled():
+            link.first.click()
+            return
+
         if tab_name in candidates:
             for sel in candidates[tab_name]:
                 locator = self.page.locator(sel).first
-                if locator.count() > 0:
+                if locator.count() > 0 and locator.is_enabled():
                     locator.click()
                     return
-            link = self.page.get_by_role("link", name=tab_name)
-            if link.count() > 0:
-                link.first.click()
-                return
-            pass
     
     def get_welcome_message(self) -> str:
         """Get the welcome message text"""
