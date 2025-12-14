@@ -43,4 +43,13 @@ jobs:
         run: python -m playwright install --with-deps
 
       - name: Run Pytest (Agile Helper)
-        run: pytest -q tests/test_agile_helper.py
+        run: |
+          START=$(date +%s)
+          pytest -q tests/test_agile_helper.py
+          END=$(date +%s)
+          DURATION=$((END - START))
+          echo "Total test time: ${DURATION}s"
+          if [ $DURATION -gt 5 ]; then
+            echo "FAIL: tests exceeded 5 seconds"
+            exit 1
+          fi
