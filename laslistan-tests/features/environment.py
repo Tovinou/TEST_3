@@ -19,6 +19,8 @@ def before_scenario(context, scenario):
     # Create a new browser context and page
     context.browser = browser.new_context()
     context.page = context.browser.new_page()
+    context.page.set_default_timeout(1000)
+    context.page.set_default_navigation_timeout(2000)
     
     # --- Instantiate Page Objects ---
     context.base_url = BASE_URL

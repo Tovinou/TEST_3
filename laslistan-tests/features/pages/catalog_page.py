@@ -18,69 +18,35 @@ class CatalogPage:
         """Click a navigation tab by its accessible name"""
         candidates = {
             "Katalog": [
-                r'text=/^\s*Katalog\s*$/',
                 '[data-testid="nav-catalog"]'
             ],
             "Lägg till bok": [
-                r'text=/Lägg\s+till\s+bok|Lägg\s+till\s+ny\s+bok/i',
                 '[data-testid="nav-add"]'
             ],
             "Mina böcker": [
-                r'text=/Mina\s+böcker|Favoriter/i',
                 '[data-testid="nav-favorites"]'
             ]
         }
         if name in candidates:
             for sel in candidates[name]:
                 locator = self.page.locator(sel).first
-                try:
-                    locator.wait_for(state="visible", timeout=10000)
+                if locator.count() > 0:
                     locator.click()
-                    try:
-                        self.page.wait_for_load_state("networkidle")
-                    except Exception:
-                        pass
                     return
-                except Exception:
-                    continue
-        try:
-            self.page.get_by_role("link", name=name).click()
-            try:
-                self.page.wait_for_load_state("networkidle")
-            except Exception:
-                pass
-        except Exception:
-            try:
-                nav = self.page.locator('nav').first
-                items = nav.locator('a, button').all()
-                index_map = {"Katalog": 0, "Lägg till bok": 1, "Mina böcker": 2}
-                idx = index_map.get(name, 0)
-                if items and len(items) > idx:
-                    items[idx].click()
-                    try:
-                        self.page.wait_for_load_state("networkidle")
-                    except Exception:
-                        pass
-            except Exception:
-                pass
+        link = self.page.get_by_role("link", name=name)
+        if link.count() > 0:
+            link.first.click()
+            return
+        pass
 
     def navigate(self):
         """Navigate to base URL if provided"""
         if self.base_url:
             self.page.goto(self.base_url)
-            try:
-                self.page.wait_for_load_state("domcontentloaded")
-            except Exception:
-                pass
+            self.page.wait_for_load_state("domcontentloaded")
 
     def wait_for_load(self):
-        """Waits for the catalog view to be visible."""
-        try:
-            self.page.locator('main').first.wait_for(state="visible", timeout=10000)
-        except Exception:
-            pass
-        # If list items are not immediately visible, allow the caller to proceed
-        # and perform their own presence checks.
+        self.page.locator('main').first.wait_for(state="visible", timeout=200)
 
     def wait_for_element(self, selector: str, timeout: int = 10000):
         self.page.locator(selector).first.wait_for(state="visible", timeout=timeout)
@@ -105,64 +71,38 @@ class CatalogPage:
         """
         # Find the book item by its title and click it.
         book_element = self.book_items.filter(has_text=title).first
-        try:
-            book_element.wait_for(state="visible", timeout=5000)
+        if book_element.count() > 0:
             book_element.click()
-        except Exception:
+        else:
             fallback = self.page.get_by_text(title, exact=False).first
-            try:
-                fallback.wait_for(state="visible", timeout=5000)
+            if fallback.count() > 0:
                 fallback.click()
-            except Exception:
-                pass
-        # A small wait to allow the application to process the click
-        self.page.wait_for_timeout(300)
 
     def toggle_favorite(self, title: str):
         item = self.book_items.filter(has_text=title).first
-        try:
-            item.wait_for(state="visible", timeout=5000)
+        if item.count() > 0:
             ctrl = item.locator('button, [role="button"], [data-testid="favorite"], .favorite, svg').first
             if ctrl and ctrl.count() > 0:
-                try:
-                    ctrl.click()
-                except Exception:
-                    item.click()
+                ctrl.click()
             else:
                 item.click()
-        except Exception:
+        else:
             fallback = self.page.get_by_text(title, exact=False).first
-            try:
+            if fallback.count() > 0:
                 fallback.click()
-            except Exception:
-                pass
-        self.page.wait_for_timeout(300)
 
     def is_book_favorited(self, title: str) -> bool:
-        try:
-            from features.pages.favorites_page import MyBooksPage
-            fav = MyBooksPage(self.page)
-            fav.click_navigation_tab("Mina böcker")
-            return fav.is_book_in_favorites(title)
-        except Exception:
-            return False
+        from features.pages.favorites_page import MyBooksPage
+        fav = MyBooksPage(self.page)
+        fav.click_navigation_tab("Mina böcker")
+        return fav.is_book_in_favorites(title)
 
     def is_book_in_catalog(self, title: str) -> bool:
-        try:
-            self.page.locator("main").first.wait_for(state="visible", timeout=5000)
-        except Exception:
-            pass
-        try:
-            loc = self.page.locator("main li, .book").filter(has_text=title)
-            if loc.count() > 0:
-                return True
-        except Exception:
-            pass
-        try:
-            any_text = self.page.get_by_text(title, exact=False)
-            return any_text.count() > 0
-        except Exception:
-            return False
+        loc = self.page.locator("main li, .book").filter(has_text=title)
+        if loc.count() > 0:
+            return True
+        any_text = self.page.get_by_text(title, exact=False)
+        return any_text.count() > 0
 
     def get_all_books(self):
         try:
@@ -178,22 +118,18 @@ class CatalogPage:
         return items
 
     def inject_book(self, title: str, author: str):
-        try:
-            self.page.evaluate(
-                """
-                (t, a) => {
-                  const main = document.querySelector('main');
-                  if (!main) return;
-                  const ul = main.querySelector('ul') || (() => { const u = document.createElement('ul'); main.appendChild(u); return u; })();
-                  const li = document.createElement('li');
-                  const text = a ? `${t}, ${a}` : t;
-                  li.textContent = text;
-                  ul.appendChild(li);
-                }
-                """,
-                title,
-                author,
-            )
-            self.page.wait_for_timeout(200)
-        except Exception:
-            pass
+        self.page.evaluate(
+            """
+            (t, a) => {
+              const main = document.querySelector('main');
+              if (!main) return;
+              const ul = main.querySelector('ul') || (() => { const u = document.createElement('ul'); main.appendChild(u); return u; })();
+              const li = document.createElement('li');
+              const text = a ? `${t}, ${a}` : t;
+              li.textContent = text;
+              ul.appendChild(li);
+            }
+            """,
+            title,
+            author,
+        )

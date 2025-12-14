@@ -7,13 +7,11 @@ def step_navigate_to_add_book(context):
 
 @when('jag fyller i titel "{title}"')
 def step_fill_title(context, title):
-    context.add_book_page.wait_for_add_book_form()
     context.add_book_page.fill_title(title)
     context.added_book_title = title
 
 @when('jag fyller i författare "{author}"')
 def step_fill_author(context, author):
-    context.add_book_page.wait_for_add_book_form()
     context.add_book_page.fill_author(author)
     context.added_book_author = author
 
@@ -42,13 +40,11 @@ def step_specific_book_in_catalog(context, title):
 @then('ska titelfältet vara tomt')
 def step_title_field_empty(context):
     context.add_book_page.click_navigation_tab("Lägg till bok")
-    context.add_book_page.wait_for_add_book_form()
     title_value = context.add_book_page.get_title_value()
     assert title_value == "", f"Title field should be empty, but contains: {title_value}"
 
 @then('ska författarfältet vara tomt')
 def step_author_field_empty(context):
-    context.add_book_page.wait_for_add_book_form()
     author_value = context.add_book_page.get_author_value()
     assert author_value == "", f"Author field should be empty, but contains: {author_value}"
 
@@ -65,5 +61,5 @@ def step_go_to_catalog(context):
 @when('jag favoritmarkerar boken "{title}"')
 def step_favorite_specific_book(context, title):
     context.catalog_page.click_book(title)
-    context.page.wait_for_timeout(500)
+    pass
     

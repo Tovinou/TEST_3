@@ -1,6 +1,12 @@
-# User Stories för Läslistan
+# User Stories – Agile Helper
 
-## Navigation
+## US-1: Läsa om Sprint planning
+Som besökare vill jag kunna läsa om hur jag planerar en sprint, så att vi håller oss till ämnet på mötet.
+
+Acceptanskriterier:
+- Jag klickar på knappen “Första”.
+- Jag klickar på knappen som innehåller texten “Sprint planning”.
+- En rubrik med texten “Sprint planning” visas.
 
 ### US-1: Navigera mellan vyer
 **Som** användare  
@@ -95,7 +101,13 @@
 
 ---
 
-## Mina böcker (Favoriter)
+## US-2: Endast Daily standup mitt i sprinten
+Som beställare vill jag att bara Daily standup ska finnas som alternativ mitt i sprinten, så att teamen håller fokus.
+
+Acceptanskriterier:
+- Jag klickar på knappen “mitt i”.
+- Jag ser en knapp för “Daily standup”.
+- Jag ser inga andra mötesval (t.ex. Sprint planning/Review/Retro/Backlog).
 
 ### US-9: Visa tom favoritlista
 **Som** ny användare  
@@ -138,7 +150,11 @@
 
 ---
 
-## Sammanfattning
+## US-3: Se startsidans fråga
+Som besökare vill jag se frågan “Vilken dag under sprinten är det?” när jag öppnar sidan, så att jag kan välja dag.
+
+Acceptanskriterier:
+- Texten “Vilken dag under sprinten är det?” är synlig på startsidan.
 
 Totalt: **12 user stories** som täcker all grundläggande funktionalitet i Läslistan-applikationen.
 
@@ -147,10 +163,4 @@ Kategorier:
 - Katalog: 4 stories
 - Lägg till bok: 3 stories
 - Mina böcker (Favoriter): 4 stories
-\`\`\`
-
-```text file="requirements.txt"
-pytest==7.4.3
-pytest-playwright==0.4.3
-playwright==1.40.0
-behave==1.2.6
+ 

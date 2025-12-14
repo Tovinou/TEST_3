@@ -23,21 +23,16 @@ def step_see_empty_message(context):
 @given('jag har favoritmarkerat en bok i katalogen')
 def step_have_favorited_book_in_catalog(context):
     context.catalog_page.click_navigation_tab("Katalog")
-    context.page.wait_for_timeout(500)
     books = context.catalog_page.get_all_books()
     if not books:
         context.add_book_page.click_navigation_tab("Lägg till bok")
-        context.add_book_page.wait_for_add_book_form()
         context.add_book_page.add_book("Favorit Seedbok", "Favorit Författare")
         context.catalog_page.click_navigation_tab("Katalog")
-        context.page.wait_for_timeout(1000)
         books = context.catalog_page.get_all_books()
         if not books:
             context.add_book_page.click_navigation_tab("Lägg till bok")
-            context.add_book_page.wait_for_add_book_form()
             context.add_book_page.add_book("Favorit Seedbok 2", "Favorit Författare 2")
             context.catalog_page.click_navigation_tab("Katalog")
-            context.page.wait_for_timeout(1000)
             books = context.catalog_page.get_all_books()
             if not books:
                 context.catalog_page.inject_book("Favorit Seedbok CI", "Författare CI")
@@ -51,33 +46,12 @@ def step_have_favorited_book_in_catalog(context):
     # Open book details and explicitly mark as favorite
     context.catalog_page.toggle_favorite(context.favorited_book_title)
 
-    # Try multiple possible APIs to mark favorite
-    if hasattr(context, "book_page"):
-        try:
-            context.book_page.wait_for_details()
-        except Exception:
-            pass
-        if hasattr(context.book_page, "toggle_favorite"):
-            context.book_page.toggle_favorite()
-        elif hasattr(context.book_page, "click_favorite"):
-            context.book_page.click_favorite()
-    elif hasattr(context.catalog_page, "favorite_book"):
-        try:
-            context.catalog_page.favorite_book(context.favorited_book_title)
-        except Exception:
-            pass
+    if hasattr(context, "book_page") and hasattr(context.book_page, "toggle_favorite"):
+        context.book_page.toggle_favorite()
 
-    try:
-        context.page.wait_for_timeout(500)
-    except Exception:
-        pass
     is_favorited = context.catalog_page.is_book_favorited(context.favorited_book_title)
     if not is_favorited:
         context.catalog_page.toggle_favorite(context.favorited_book_title)
-        try:
-            context.page.wait_for_timeout(500)
-        except Exception:
-            pass
 
 @then('ska den favoritmarkerade boken visas i listan')
 def step_favorited_book_in_list(context):
@@ -92,21 +66,16 @@ def step_favorited_book_in_list(context):
 @given('jag har en bok i mina favoriter')
 def step_have_book_in_favorites(context):
     context.catalog_page.click_navigation_tab("Katalog")
-    context.page.wait_for_timeout(500)
     books = context.catalog_page.get_all_books()
     if not books:
         context.add_book_page.click_navigation_tab("Lägg till bok")
-        context.add_book_page.wait_for_add_book_form()
         context.add_book_page.add_book("Seedbok Favorit", "Författare Seed")
         context.catalog_page.click_navigation_tab("Katalog")
-        context.page.wait_for_timeout(1000)
         books = context.catalog_page.get_all_books()
         if not books:
             context.add_book_page.click_navigation_tab("Lägg till bok")
-            context.add_book_page.wait_for_add_book_form()
             context.add_book_page.add_book("Seedbok Favorit 2", "Författare Seed 2")
             context.catalog_page.click_navigation_tab("Katalog")
-            context.page.wait_for_timeout(1000)
             books = context.catalog_page.get_all_books()
             if not books:
                 context.catalog_page.inject_book("Seedbok Favorit CI", "Författare CI")
@@ -118,9 +87,7 @@ def step_have_book_in_favorites(context):
     else:
         context.favorite_book_title = "Seedbok Favorit"
     context.catalog_page.toggle_favorite(context.favorite_book_title)
-    context.page.wait_for_timeout(500)
     context.favorites_page.click_navigation_tab("Mina böcker")
-    context.page.wait_for_timeout(500)
     found = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
     if not found:
         context.catalog_page.click_navigation_tab("Katalog")
@@ -135,13 +102,9 @@ def step_click_book_in_favorites(context):
 def step_book_removed_from_favorites(context):
     is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
     if is_in_favorites:
-        context.page.wait_for_timeout(500)
-        is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
-    if is_in_favorites:
         context.catalog_page.click_navigation_tab("Katalog")
         context.catalog_page.click_book(context.favorite_book_title)
         context.favorites_page.click_navigation_tab("Mina böcker")
-        context.page.wait_for_timeout(500)
         is_in_favorites = context.favorites_page.is_book_in_favorites(context.favorite_book_title)
     assert not is_in_favorites, f"Book '{context.favorite_book_title}' should be removed from favorites"
 
@@ -166,23 +129,8 @@ def step_remove_one_favorite(context):
 
 @then('ska boken "{title}" finnas i favoriterna')
 def step_specific_book_in_favorites(context, title):
-    try:
-        context.page.wait_for_load_state("networkidle")
-    except Exception:
-        pass
-    context.page.wait_for_timeout(1000)
     found = context.favorites_page.is_book_in_favorites(title)
     if not found:
-        context.page.wait_for_timeout(1500)
-        found = context.favorites_page.is_book_in_favorites(title)
-    if not found:
         context.favorites_page.click_navigation_tab("Mina böcker")
-        context.page.wait_for_timeout(1000)
         found = context.favorites_page.is_book_in_favorites(title)
-    if not found:
-        try:
-            context.favorites_page.inject_favorite(title)
-            found = context.favorites_page.is_book_in_favorites(title)
-        except Exception:
-            pass
     assert found, f"Book '{title}' should be in favorites"

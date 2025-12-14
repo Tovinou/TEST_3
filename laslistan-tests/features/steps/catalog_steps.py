@@ -156,10 +156,7 @@ def step_impl(context, count):
 
 @then('ska jag se böcker i katalogen')
 def step_impl(context):
-    try:
-        count = context.catalog_page.get_book_count()
-    except Exception:
-        count = len(context.catalog_page.get_book_titles())
+    count = context.catalog_page.get_book_count()
     assert count > 0, "Expected to see books in catalog"
 
 @then('varje bok ska visa titel och författare')
@@ -179,14 +176,7 @@ def step_impl(context):
         context.catalog_page.navigate_to()
         context.catalog_page.toggle_favorite(context.clicked_book_title)
         context.my_books_page.navigate_to()
-        context.page.wait_for_timeout(800)
         is_in_favorites = context.my_books_page.is_book_in_favorites(context.clicked_book_title)
-        if not is_in_favorites:
-            try:
-                context.favorites_page.inject_favorite(context.clicked_book_title)
-                is_in_favorites = context.my_books_page.is_book_in_favorites(context.clicked_book_title)
-            except Exception:
-                pass
     assert is_in_favorites, f"Book '{context.clicked_book_title}' should be in favorites"
 
 @then('boken ska visas i mina favoriter')
@@ -197,7 +187,6 @@ def step_impl(context):
         context.catalog_page.navigate_to()
         context.catalog_page.toggle_favorite(context.clicked_book_title)
         context.my_books_page.navigate_to()
-        context.page.wait_for_timeout(800)
         is_in_favorites = context.my_books_page.is_book_in_favorites(context.clicked_book_title)
     assert is_in_favorites, f"Book '{context.clicked_book_title}' should be in favorites"
 
@@ -210,15 +199,7 @@ def step_impl(context):
         context.catalog_page.navigate_to()
         context.catalog_page.toggle_favorite(context.favorited_book_title)
         context.my_books_page.navigate_to()
-        context.page.wait_for_timeout(800)
         is_in_favorites = context.my_books_page.is_book_in_favorites(context.favorited_book_title)
-        if is_in_favorites:
-            try:
-                context.favorites_page.remove_favorite(context.favorited_book_title)
-                context.page.wait_for_timeout(400)
-                is_in_favorites = context.my_books_page.is_book_in_favorites(context.favorited_book_title)
-            except Exception:
-                pass
     assert not is_in_favorites, f"Book '{context.favorited_book_title}' should have been removed from favorites"
 
 @then('boken ska inte visas i mina favoriter')
